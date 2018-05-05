@@ -8,4 +8,7 @@ public class Constants {
    public static final String SUBSCRIBE_TOPIC = "myTopic";
 
    public static final String CLIENT_ID = "myClient";
+   public static final String USER_NAME = "wlhagkju";
+    public static final String PASSWORD = "_5NZoVmjTPjx";
+
 }
