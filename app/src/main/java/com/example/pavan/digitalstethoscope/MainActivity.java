@@ -11,6 +11,8 @@ import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
+import java.util.*;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -30,6 +32,7 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -46,6 +49,9 @@ public class MainActivity extends AppCompatActivity {
     Button submitButton;
     Handler pgHandler = new Handler();
     MediaPlayer mp;
+    Bitmap bp;
+    private java.util.Base64.Encoder encoder;
+    private java.util.Base64.Decoder decoder;
 
 
     private static final String TAG = "Main Activity";
@@ -172,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void deliveryComplete(IMqttDeliveryToken iMqttDeliveryToken) {
+                            Log.d(TAG, "deliveryComplete: ");
 
                         }
                     });
@@ -215,13 +222,13 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onSuccess(IMqttToken iMqttToken) {
-                Log.d(TAG, "Subscribe Successfully " + topic);
+                Log.d(TAG, "Subscribed Successfully " + topic);
 
             }
 
             @Override
             public void onFailure(IMqttToken iMqttToken, Throwable throwable) {
-                Log.e(TAG, "Subscribe Failed " + topic);
+                Log.e(TAG, "Subscription Failed " + topic);
             }
         });
     }
@@ -248,6 +255,7 @@ public class MainActivity extends AppCompatActivity {
         try
         {
             publishMessage(mqtt,"Hello World" , 0, Constants.PUBLISH_TOPIC);
+            //subscribe(mqtt,Constants.SUBSCRIBE_TOPIC,0);
         }
         catch(Exception e)
         {
@@ -258,7 +266,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                //TODO: spectrogram generation and base64 conversion here
+                //spectrogram generation and base64 conversion here
 
                 File demoFile =new File(getCacheDir()+"demo.wav");
                 InputStream ins = getResources().openRawResource(R.raw.demo);
@@ -275,7 +283,8 @@ public class MainActivity extends AppCompatActivity {
                 Wave wave = new Wave(getCacheDir()+"demo.wav");
                 Spectrogram spectrogram = new Spectrogram(wave);
 
-                imgView.setImageBitmap(spectrogramToImage(spectrogram.getAbsoluteSpectrogramData()) );
+                bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
+                imgView.setImageBitmap(bp);
 
 
                 /*
@@ -292,11 +301,15 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 */
-
-
-                String msg="sample";
+                // Bitmap to base64 encoding
+                ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+                bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
+                byte[] byteArray = byteArrayOutputStream .toByteArray();
+                //String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                String msg= Base64.encodeToString(byteArray, Base64.NO_WRAP);
                 try {
-                    publishMessage(mqtt, msg, 0, "myTopic");
+                    publishMessage(mqtt, msg, 0, Constants.PUBLISH_TOPIC);
+                    Log.d(TAG, "onClick: after publish" + msg);
                 }
                 catch(Exception e)
                 {
