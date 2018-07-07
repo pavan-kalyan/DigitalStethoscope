@@ -30,7 +30,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-//import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -47,8 +47,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-//import com.musicg.wave.Wave;
-//import com.musicg.wave.extension.Spectrogram;
+import com.musicg.wave.Wave;
+import com.musicg.wave.extension.Spectrogram;
 
 public class MainActivity extends AppCompatActivity {
     TextView resultTextView;
@@ -309,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
                 InputStream ins = getResources().openRawResource(R.raw.demo);
                 Log.d(TAG, "INS" + ins);
                 try {
-                    //FileUtils.copyInputStreamToFile(ins, demoFile);
+                    FileUtils.copyInputStreamToFile(ins, demoFile);
                     Log.d(TAG, "COPY INS TO DEMO FILE");
                     ins.close();
                 } catch (IOException e) {
@@ -317,8 +317,8 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-                //Wave wave = new Wave(getCacheDir()+"demo.wav");
-                //Spectrogram spectrogram = new Spectrogram(wave);
+                Wave wave = new Wave(getCacheDir()+"demo.wav");
+                Spectrogram spectrogram = new Spectrogram(wave);
 
                // bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
                 imgView.setImageBitmap(bp);
