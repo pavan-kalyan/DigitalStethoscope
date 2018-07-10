@@ -19,8 +19,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
 
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+
 import java.util.*;
 import android.util.Log;
 import android.view.View;
@@ -58,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     Button submitButton;
     Handler pgHandler = new Handler();
     MediaPlayer mp;
+
     private static final int RECORDER_BPP = 16;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
     private static final int RECORDER_SAMPLERATE = 44100;
@@ -70,9 +73,9 @@ public class MainActivity extends AppCompatActivity {
     private Thread recordingThread = null;
     private boolean isRecording = false;
     private boolean permissionToRecordAccepted = false;
+
     Bitmap bp;
-    private java.util.Base64.Encoder encoder;
-    private java.util.Base64.Decoder decoder;
+    
 
 
     private static final String TAG = "Main Activity";
@@ -320,7 +323,10 @@ public class MainActivity extends AppCompatActivity {
                 Wave wave = new Wave(getCacheDir()+"demo.wav");
                 Spectrogram spectrogram = new Spectrogram(wave);
 
-               // bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
+
+               
+                bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
+
                 imgView.setImageBitmap(bp);
 
 
