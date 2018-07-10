@@ -1,17 +1,28 @@
 package com.example.pavan.digitalstethoscope;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.os.Handler;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
+
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import java.util.*;
 import android.util.Log;
 import android.view.View;
@@ -49,13 +60,39 @@ public class MainActivity extends AppCompatActivity {
     Button submitButton;
     Handler pgHandler = new Handler();
     MediaPlayer mp;
+
+    private static final int RECORDER_BPP = 16;
+    private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+    private static final int RECORDER_SAMPLERATE = 44100;
+    private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_STEREO;
+    private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
+    private String [] permissions = {Manifest.permission.RECORD_AUDIO, Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+    private AudioRecord recorder = null;
+    private int bufferSize = 0;
+    private Thread recordingThread = null;
+    private boolean isRecording = false;
+    private boolean permissionToRecordAccepted = false;
+
     Bitmap bp;
-    private java.util.Base64.Encoder encoder;
-    private java.util.Base64.Decoder decoder;
+    
 
 
     private static final String TAG = "Main Activity";
     MqttAndroidClient mqtt;
+
+    @Override //android permissions for recording sound
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (requestCode){
+            case REQUEST_RECORD_AUDIO_PERMISSION:
+                permissionToRecordAccepted  = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                break;
+        }
+        if (!permissionToRecordAccepted ) finish();
+
+    }
+
 
     //saveToInternalStorage method not working properly, Ignore
     private String saveToInternalStorage(Bitmap bitmapImage){
@@ -244,6 +281,9 @@ public class MainActivity extends AppCompatActivity {
         recordPgBar = findViewById(R.id.pgbar_record_hb);
         mp = MediaPlayer.create(this,R.raw.demo);
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
+        bufferSize = AudioRecord.getMinBufferSize(8000,
+                AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
 
 
 
@@ -283,7 +323,10 @@ public class MainActivity extends AppCompatActivity {
                 Wave wave = new Wave(getCacheDir()+"demo.wav");
                 Spectrogram spectrogram = new Spectrogram(wave);
 
+
+               
                 bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
+
                 imgView.setImageBitmap(bp);
 
 
@@ -321,7 +364,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                // TODO: audio record code here
 
 
                 //pg bar thread runs for 10 sec.
@@ -330,6 +372,8 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run()
                     {
+                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/example.wav");
+                        wavRecorder.startRecording();
                         while(recordPgBarStatus<=100)
                         {
 
@@ -345,9 +389,13 @@ public class MainActivity extends AppCompatActivity {
                             });
                             recordPgBarStatus+=10;
                         }
+                        wavRecorder.stopRecording();
                     }
                 }).start();
+
+
             }
+
         });
 
 
