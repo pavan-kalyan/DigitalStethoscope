@@ -1,6 +1,7 @@
 package com.example.pavan.digitalstethoscope;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.pm.PackageManager;
@@ -11,10 +12,12 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.provider.SyncStateContract;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Base64;
@@ -23,6 +26,7 @@ import android.util.Base64;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import java.net.InetAddress;
 import java.util.*;
 import android.util.Log;
 import android.view.View;
@@ -31,8 +35,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.io.FileUtils;
+//import org.apache.commons.net.ftp.*;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -42,6 +48,7 @@ import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.jibble.simpleftp.SimpleFTP;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,6 +56,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+
+import com.adeel.library.easyFTP;
 import com.musicg.wave.Wave;
 import com.musicg.wave.extension.Spectrogram;
 
@@ -279,11 +288,13 @@ public class MainActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
         recordPgBar = findViewById(R.id.pgbar_record_hb);
-        mp = MediaPlayer.create(this,R.raw.demo);
+
+
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
         bufferSize = AudioRecord.getMinBufferSize(8000,
                 AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT);
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+        //ActivityCompat.requestPermissions(this,permissions,);
 
 
 
@@ -319,6 +330,75 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "COPY FAILED");
                     e.printStackTrace();
                 }
+                final String TAG="on submit";
+
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Permission is not granted
+                    Log.d(TAG, "onCreate: PERMISSION NOT GRANTED");
+                    // requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},42);
+                    Log.d(TAG, "onCreate: after permissions");
+
+                }
+
+                if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    // Permission is not granted
+                    Log.d(TAG, "onCreate: PERMISSION NOT GRANTED");
+                }
+                @SuppressLint("StaticFieldLeak") AsyncTask asyncTask =new AsyncTask() {
+                    @Override
+                    protected Object doInBackground(Object[] objects) {
+                        try {
+                            SimpleFTP ftp = new SimpleFTP();
+                            //requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
+                            // Connect to an FTP server on port 21.
+                            Log.d(TAG, "onCreate: before connect");
+                            ftp.connect("192.168.2.7", 21);
+                            //ftp.connect("192.168.2.2", 2121,"ftp","ftp");
+                            Log.d(TAG, "onCreate: after connect");
+                            // Set binary mode.
+                            ftp.bin();
+
+                            // Change to a new working directory on the FTP server.
+                            Log.d(TAG, "doInBackground: before changing directory");
+                            //ftp.cwd("Download/");
+                            //ftp.cwd("MATLAB/");
+                            Log.d(TAG, "doInBackground: after changing dir");
+                            // Upload some files.
+                            Log.d(TAG, "doInBackground: "+getFilesDir());
+                            String path ="/storage/emulated/0/Audio";
+                            File file = new File(new File(path),"example.wav");
+                            Log.d(TAG, "doInBackground: "+file);
+                            final int d = Log.d(TAG, "doInBackground: before file upload");
+                            Log.d(TAG, "doInBackground: current ftp path"+ftp.pwd());
+                            ftp.stor(new File(path+"/example.wav"));
+                            // ftp.stor(new File("comicbot-latest.png"));
+
+                            // You can also upload from an InputStream, e.g.
+                            // ftp.stor(new FileInputStream(new File("test.png")), "test.png");
+                            // ftp.stor(someSocket.getInputStream(), "blah.dat");
+                            Log.d(TAG, "doInBackground: after upload");
+
+                            // Quit from the FTP server.
+                            ftp.disconnect();
+                        } catch (IOException e) {
+                            // Jibble.
+                            Log.d(TAG, "onCreate: failed");
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }
+                    public void onPostExecute(Object res) {
+                        if (res instanceof Exception) {
+                            int d = Toast.LENGTH_SHORT;
+                            Toast toast = Toast.makeText(getApplicationContext(),"hello world"+res,d);
+                            toast.show();
+                        }
+                    }
+
+                };
+                asyncTask.execute();
 
                 Wave wave = new Wave(getCacheDir()+"demo.wav");
                 Spectrogram spectrogram = new Spectrogram(wave);
@@ -330,20 +410,7 @@ public class MainActivity extends AppCompatActivity {
                 imgView.setImageBitmap(bp);
 
 
-                /*
-                try {
-                    demoWav = WavFile.openWavFile(demoFile);
-                    //demoWav.display();
-                    Log.d(TAG, "onClick: buffer size "+demoWav.getNumChannels() * (int) demoWav.getNumFrames()));
-                    int[] sampleBuffer = new int[demoWav.getNumChannels() * (int) demoWav.getNumFrames()];
-                    demoWav.readFrames(sampleBuffer, (int) demoWav.getNumFrames());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                } catch (WavFileException e) {
-                    e.printStackTrace();
-                }
 
-                */
                 // Bitmap to base64 encoding
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
