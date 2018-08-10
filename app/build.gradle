@@ -31,4 +31,6 @@ dependencies {
     compile files('libs/commons-io-2.6.jar')
     //implementation files('libs/commons-net-3.6.jar')
     implementation files('libs/simpleftp.jar')
+    compile 'com.nbsp:library:1.8'
+    compile 'com.android.support:design:27.1.1'
 }
