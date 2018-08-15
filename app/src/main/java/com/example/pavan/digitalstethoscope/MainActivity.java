@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -60,8 +61,12 @@ import java.io.UnsupportedEncodingException;
 import com.adeel.library.easyFTP;
 import com.musicg.wave.Wave;
 import com.musicg.wave.extension.Spectrogram;
+import com.nbsp.materialfilepicker.MaterialFilePicker;
+import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 
 public class MainActivity extends AppCompatActivity {
+    Button pick;
+    TextView filepath;
     TextView resultTextView;
     ProgressBar recordPgBar;
     int recordPgBarStatus = 0;
@@ -284,6 +289,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // initalising all UI elements
+        pick = findViewById(R.id.pick_id);
+        filepath = findViewById(R.id.path_id);
         resultTextView = findViewById(R.id.txt_result);
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
@@ -295,6 +302,21 @@ public class MainActivity extends AppCompatActivity {
                 AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT);
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
         //ActivityCompat.requestPermissions(this,permissions,);
+        pick.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new MaterialFilePicker()
+                        .withActivity(MainActivity.this)
+                        .withRequestCode(1000)
+                        .withPath("/storage/emulated/0/Audio")
+                        //.withFilter(Pattern.compile(".*\\$")) // Filtering files and directories by file name using regexp
+                        // .withFilterDirectories(true) // Set directories filterable (false by default)
+                        .withHiddenFiles(true) // Show hidden files and folders
+                        .start();
+            }
+        });
+
+
 
 
 
@@ -439,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run()
                     {
-                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/example.wav");
+                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/test.wav");
                         wavRecorder.startRecording();
                         while(recordPgBarStatus<=100)
                         {
@@ -466,5 +488,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1000 && resultCode == RESULT_OK) {
+            String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
+            filepath.setText(filePath);
+        }
     }
 }
