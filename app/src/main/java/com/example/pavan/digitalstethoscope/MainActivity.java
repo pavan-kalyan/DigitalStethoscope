@@ -189,9 +189,9 @@ public class MainActivity extends AppCompatActivity {
 
     private MqttConnectOptions getMqttConnectionOption() {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-        mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(true);
-       mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "I am going offline".getBytes(), 1, true);
+       mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
         mqttConnectOptions.setUserName(Constants.USER_NAME);
         mqttConnectOptions.setPassword(Constants.PASSWORD.toCharArray());
         return mqttConnectOptions;
@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
         encodedPayload = msg.getBytes("UTF-8");
         MqttMessage message = new MqttMessage(encodedPayload);
         message.setId(5866);
-        message.setRetained(true);
+        message.setRetained(false);
         message.setQos(qos);
         client.publish(topic, message);
     }
@@ -387,6 +387,8 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "onCreate: before connect");
                             ftp.connect(preferences.getString("Hi", "on no"), 21);
                             //ftp.connect("192.168.2.2", 2121,"ftp","ftp");
+                            //ftp.connect("192.168.2.10", 21);
+                            //ftp.connect("192.168.43.114", 21,"pavan","glaedr491");
                             Log.d(TAG, "onCreate: after connect");
                             // Set binary mode.
                             ftp.bin();
@@ -403,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
                             Log.d(TAG, "doInBackground: "+file);
                             final int d = Log.d(TAG, "doInBackground: before file upload");
                             Log.d(TAG, "doInBackground: current ftp path"+ftp.pwd());
-                            ftp.stor(new File(path+"/example.wav"));
+                            ftp.stor(new File(path+"/test.wav"));
                             // ftp.stor(new File("comicbot-latest.png"));
 
                             // You can also upload from an InputStream, e.g.
@@ -447,7 +449,7 @@ public class MainActivity extends AppCompatActivity {
                 bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
                 byte[] byteArray = byteArrayOutputStream .toByteArray();
                 //String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                String msg= Base64.encodeToString(byteArray, Base64.NO_WRAP);
+                String msg= " sent wav file";
                 try {
                     publishMessage(mqtt, msg, 0, Constants.PUBLISH_TOPIC);
                     Log.d(TAG, "onClick: after publish" + msg);
