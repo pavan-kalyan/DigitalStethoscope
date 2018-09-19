@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -13,6 +14,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.audiofx.Equalizer;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.provider.SyncStateContract;
@@ -67,13 +69,14 @@ import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 public class MainActivity extends AppCompatActivity {
     Button pick;
     TextView filepath;
+    TextView text;
     TextView resultTextView;
     ProgressBar recordPgBar;
     int recordPgBarStatus = 0;
     Button recordButton;
     Button submitButton;
     Handler pgHandler = new Handler();
-    MediaPlayer mp;
+    MediaPlayer player;
 
     private static final int RECORDER_BPP = 16;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -291,10 +294,16 @@ public class MainActivity extends AppCompatActivity {
         // initalising all UI elements
         pick = findViewById(R.id.pick_id);
         filepath = findViewById(R.id.path_id);
+        text = findViewById(R.id.path_id);
         resultTextView = findViewById(R.id.txt_result);
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
         recordPgBar = findViewById(R.id.pgbar_record_hb);
+        final SharedPreferences preferences = getSharedPreferences("Hell",MODE_PRIVATE);
+
+        Toast.makeText(this, preferences.getString("Hi", "on no"), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
 
 
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
@@ -376,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
                             //requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
                             // Connect to an FTP server on port 21.
                             Log.d(TAG, "onCreate: before connect");
-                            ftp.connect("192.168.2.7", 21);
+                            ftp.connect(preferences.getString("Hi", "on no"), 21);
                             //ftp.connect("192.168.2.2", 2121,"ftp","ftp");
                             Log.d(TAG, "onCreate: after connect");
                             // Set binary mode.
@@ -497,5 +506,37 @@ public class MainActivity extends AppCompatActivity {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             filepath.setText(filePath);
         }
+    }
+
+    public void settingsActivity(View view) {
+        Intent i = new Intent(this,settings.class);
+        startActivity(i);
+    }
+
+    public void play(View view) {
+        player = new MediaPlayer();
+        String a = (String) text.getText();
+        Equalizer equalizer = new Equalizer(0,player.getAudioSessionId());
+
+        equalizer.setEnabled(true);
+        equalizer.setBandLevel((short) 0,(short)1500);
+        equalizer.setBandLevel((short) 1,(short)-1500);
+        equalizer.setBandLevel((short) 2,(short)-1500);
+        equalizer.setBandLevel((short) 3,(short)-1500);
+        equalizer.setBandLevel((short) 4,(short)-1500);
+        equalizer.getNumberOfPresets();//like Normal Classic,Dance Flat,Folk Heavy Metal,Hip Hop,Jazz
+        try {
+            player.setDataSource(a);
+            player.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+            }
+        });
+
     }
 }
