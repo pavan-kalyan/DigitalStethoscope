@@ -123,9 +123,35 @@
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
-        android:text="TextView"
+        android:text="Path"
+        android:textAlignment="center"
         app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_submit_hb" />
+
+    <Button
+        android:id="@+id/play_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="8dp"
+        android:text="play"
+        android:onClick="play"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_record_hb"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintStart_toEndOf="@+id/btn_record_hb" />
+
+    <Button
+        android:id="@+id/settings_id"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="settings"
+        android:onClick="settingsActivity"
+        app:layout_constraintStart_toStartOf="@+id/play_id"
+        app:layout_constraintTop_toTopOf="@+id/btn_submit_hb" />
 </android.support.constraint.ConstraintLayout>
+
