@@ -192,8 +192,8 @@ public class MainActivity extends AppCompatActivity {
         mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(true);
        mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
-        mqttConnectOptions.setUserName(Constants.USER_NAME);
-        mqttConnectOptions.setPassword(Constants.PASSWORD.toCharArray());
+        mqttConnectOptions.setUserName(preferences.getString("mqtt_username","wlhagkju"));
+        mqttConnectOptions.setPassword(preferences.getString("mqtt_password","_5NZoVmjTPjx").toCharArray());
         return mqttConnectOptions;
     }
     private DisconnectedBufferOptions getDisconnectedBufferOptions() {
@@ -286,12 +286,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         // initalising all UI elements
+        preferences = getSharedPreferences("Hell",MODE_PRIVATE);
         pick = findViewById(R.id.pick_id);
         filepath = findViewById(R.id.path_id);
         text = findViewById(R.id.path_id);
@@ -299,9 +300,9 @@ public class MainActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
         recordPgBar = findViewById(R.id.pgbar_record_hb);
-        final SharedPreferences preferences = getSharedPreferences("Hell",MODE_PRIVATE);
 
-        Toast.makeText(this, preferences.getString("Hi", "on no"), Toast.LENGTH_SHORT).show();
+
+        Toast.makeText(this, preferences.getString("ftp_ip", "192.168.43.113"), Toast.LENGTH_SHORT).show();
         Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
         Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
 
@@ -332,7 +333,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //creating the client
-        mqtt = getMqttClient(this,Constants.MQTT_BROKER_URL,Constants.CLIENT_ID);
+        mqtt = getMqttClient(this,preferences.getString("mqtt_ip","tcp://m11.cloudmqtt.com") + ":" + preferences.getString("mqtt_port","16138"),Constants.CLIENT_ID);
 
         try
         {
@@ -385,7 +386,12 @@ public class MainActivity extends AppCompatActivity {
                             //requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
                             // Connect to an FTP server on port 21.
                             Log.d(TAG, "onCreate: before connect");
-                            ftp.connect(preferences.getString("Hi", "on no"), 21);
+
+                            ftp.connect(preferences.getString("ftp_ip","192.168.43.114"),21,
+                                    preferences.getString("ftp_username","pavan"),
+                                    preferences.getString("ftp_pass","glaedr491"));
+
+//                            ftp.connect(preferences.getString("Hi", "on no"), 21);
                             //ftp.connect("192.168.2.2", 2121,"ftp","ftp");
                             //ftp.connect("192.168.2.10", 21);
                             //ftp.connect("192.168.43.114", 21,"pavan","glaedr491");
