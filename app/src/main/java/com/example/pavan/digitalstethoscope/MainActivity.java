@@ -455,7 +455,7 @@ public class MainActivity extends AppCompatActivity {
                 bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
                 byte[] byteArray = byteArrayOutputStream .toByteArray();
                 //String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                String msg= " sent wav file";
+                String msg= "sent wav file test.wav";
                 try {
                     publishMessage(mqtt, msg, 0, Constants.PUBLISH_TOPIC);
                     Log.d(TAG, "onClick: after publish" + msg);
