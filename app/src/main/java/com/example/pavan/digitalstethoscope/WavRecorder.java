@@ -65,7 +65,7 @@ public class WavRecorder {
 
     public void startRecording() {
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.UNPROCESSED,
+        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC,
                 RECORDER_SAMPLERATE, RECORDER_CHANNELS,
                 RECORDER_AUDIO_ENCODING, bufferSize);
         int i = recorder.getState();

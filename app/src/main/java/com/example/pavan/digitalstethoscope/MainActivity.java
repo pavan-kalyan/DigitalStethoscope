@@ -59,6 +59,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.regex.Pattern;
 
 import com.adeel.library.easyFTP;
 import com.musicg.wave.Wave;
@@ -400,18 +401,21 @@ public class MainActivity extends AppCompatActivity {
                             ftp.bin();
 
                             // Change to a new working directory on the FTP server.
-                            Log.d(TAG, "doInBackground: before changing directory");
+                            Log.d(TAG, "doInBackground FTP: before changing directory");
                             //ftp.cwd("Download/");
                             //ftp.cwd("MATLAB/");
-                            Log.d(TAG, "doInBackground: after changing dir");
+                            Log.d(TAG, "doInBackground FTP: after changing dir");
                             // Upload some files.
-                            Log.d(TAG, "doInBackground: "+getFilesDir());
+                            Log.d(TAG, "doInBackground FTP: "+getFilesDir());
                             String path ="/storage/emulated/0/Audio";
-                            File file = new File(new File(path),"example.wav");
-                            Log.d(TAG, "doInBackground: "+file);
-                            final int d = Log.d(TAG, "doInBackground: before file upload");
-                            Log.d(TAG, "doInBackground: current ftp path"+ftp.pwd());
-                            ftp.stor(new File(path+"/test.wav"));
+                            //File file = new File(new File(path),"example.wav");
+
+                            File file = new File(filepath.getText().toString());
+                            Log.d(TAG, "doInBackground FTP: "+file);
+                            final int d = Log.d(TAG, "doInBackground FTP: before file upload");
+                            Log.d(TAG, "doInBackgroundFTP: current ftp path"+ftp.pwd());
+                            //ftp.stor(new File(path+"/test.wav"));
+                            ftp.stor(file);
                             // ftp.stor(new File("comicbot-latest.png"));
 
                             // You can also upload from an InputStream, e.g.
@@ -439,7 +443,7 @@ public class MainActivity extends AppCompatActivity {
                 };
                 asyncTask.execute();
 
-                Wave wave = new Wave(getCacheDir()+"demo.wav");
+                Wave wave = new Wave(filepath.getText().toString());
                 Spectrogram spectrogram = new Spectrogram(wave);
 
 
@@ -455,10 +459,12 @@ public class MainActivity extends AppCompatActivity {
                 bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
                 byte[] byteArray = byteArrayOutputStream .toByteArray();
                 //String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
+                String[] list=filepath.getText().toString().split(Pattern.quote("/"));
+                Log.d(TAG, "publish : "+ list[list.length-1]);
                 String msg= "sent wav file test.wav";
                 try {
-                    publishMessage(mqtt, msg, 0, Constants.PUBLISH_TOPIC);
-                    Log.d(TAG, "onClick: after publish" + msg);
+                    publishMessage(mqtt, list[list.length-1].substring(0,list[list.length-1].length()-4), 0, Constants.PUBLISH_TOPIC);
+                    Log.d(TAG, "onClick: after publish" + list[list.length-1]);
                 }
                 catch(Exception e)
                 {
@@ -469,8 +475,8 @@ public class MainActivity extends AppCompatActivity {
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
+                recordPgBarStatus=0;
+                String path= "/storage/self/primary/Audio/test.wav";
 
                 //pg bar thread runs for 10 sec.
                 new Thread(new Runnable()
@@ -498,7 +504,7 @@ public class MainActivity extends AppCompatActivity {
                         wavRecorder.stopRecording();
                     }
                 }).start();
-
+                filepath.setText(path);
 
             }
 
