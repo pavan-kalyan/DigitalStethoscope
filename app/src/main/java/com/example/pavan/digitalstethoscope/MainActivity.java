@@ -524,7 +524,7 @@ public class MainActivity extends AppCompatActivity {
     public void play(View view) {
         player = new MediaPlayer();
         String a = (String) text.getText();
-        Equalizer equalizer = new Equalizer(0,player.getAudioSessionId());
+       /* Equalizer equalizer = new Equalizer(0,player.getAudioSessionId());
 
         equalizer.setEnabled(true);
         equalizer.setBandLevel((short) 0,(short)1500);
@@ -532,7 +532,7 @@ public class MainActivity extends AppCompatActivity {
         equalizer.setBandLevel((short) 2,(short)-1500);
         equalizer.setBandLevel((short) 3,(short)-1500);
         equalizer.setBandLevel((short) 4,(short)-1500);
-        equalizer.getNumberOfPresets();//like Normal Classic,Dance Flat,Folk Heavy Metal,Hip Hop,Jazz
+        equalizer.getNumberOfPresets();//like Normal Classic,Dance Flat,Folk Heavy Metal,Hip Hop,Jazz*/
         try {
             player.setDataSource(a);
             player.prepare();
