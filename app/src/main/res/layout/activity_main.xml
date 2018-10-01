@@ -6,62 +6,55 @@
     android:layout_height="match_parent"
     tools:context="com.example.pavan.digitalstethoscope.MainActivity">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
+    <ProgressBar
+        android:id="@+id/pgbar_record_hb"
+        style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
+        android:max="100"
+        app:layout_constraintBottom_toTopOf="@+id/btn_record_hb"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ProgressBar
-        android:id="@+id/pgbar_record_hb"
-        style="@android:style/Widget.DeviceDefault.ProgressBar.Horizontal"
-        android:layout_width="304dp"
-        android:layout_height="37dp"
-        android:max="100"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="28dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
-
     <Button
         android:id="@+id/btn_record_hb"
-        android:layout_width="wrap_content"
+        android:layout_width="125dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"
+
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
         android:layout_marginTop="32dp"
         android:background="@drawable/test_man_just_work"
-
         android:drawableLeft="@drawable/ic_record"
         android:drawablePadding="8dp"
         android:padding="8dp"
         android:text="Record"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.221"
+        app:layout_constraintBottom_toTopOf="@+id/pick_id"
+        app:layout_constraintEnd_toStartOf="@+id/play_id"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pgbar_record_hb" />
 
     <Button
         android:id="@+id/btn_submit_hb"
-        android:layout_width="wrap_content"
+        android:layout_width="125dp"
         android:layout_height="48dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
         android:layout_marginTop="16dp"
         android:background="@drawable/test_man_just_work"
         android:drawableLeft="@drawable/ic_file_upload_black_24dp"
         android:drawablePadding="8dp"
         android:padding="8dp"
         android:text="Publish"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.221"
+        app:layout_constraintBottom_toTopOf="@+id/path_id"
+        app:layout_constraintEnd_toStartOf="@+id/settings_id"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/pick_id" />
 
@@ -69,12 +62,15 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:text="Results"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="24dp"
+        android:text="Results :"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        app:layout_constraintBottom_toTopOf="@+id/imageView"
+        app:layout_constraintEnd_toStartOf="@+id/txt_result"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/path_id" />
 
@@ -83,44 +79,47 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginStart="16dp"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        app:layout_constraintBottom_toBottomOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView2"
-        tools:text="sfasd" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/textView2"
+        app:layout_constraintTop_toTopOf="@+id/textView2"
+        tools:text="Prediction" />
 
     <ImageView
         android:id="@+id/imageView"
-        android:layout_width="185dp"
+        android:layout_width="wrap_content"
         android:layout_height="92dp"
         android:layout_marginBottom="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/imageView1"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txt_result" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <ImageView
         android:id="@+id/imageView1"
-        android:layout_width="185dp"
+        android:layout_width="wrap_content"
         android:layout_height="92dp"
-        android:layout_marginBottom="8dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="192dp"
         android:layout_marginRight="8dp"
-        android:layout_marginStart="192dp"
         app:layout_constraintBottom_toBottomOf="@+id/imageView"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/imageView"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/imageView"
+        app:layout_constraintTop_toTopOf="@+id/imageView" />
 
     <Button
         android:id="@+id/pick_id"
-        android:layout_width="wrap_content"
+        android:layout_width="125dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
@@ -129,33 +128,35 @@
         android:layout_marginTop="16dp"
         android:background="@drawable/tess"
         android:text="pick"
+        app:layout_constraintBottom_toTopOf="@+id/btn_submit_hb"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_record_hb" />
 
     <TextView
         android:id="@+id/path_id"
-        android:layout_width="242dp"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
         android:text="Path"
         android:textAlignment="center"
+        app:layout_constraintBottom_toTopOf="@+id/textView2"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_submit_hb" />
 
     <Button
         android:id="@+id/play_id"
-        android:layout_width="wrap_content"
+        android:layout_width="125dp"
         android:layout_height="48dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
-        android:layout_marginStart="8dp"
         android:background="@drawable/test_man_just_work"
         android:drawableLeft="@drawable/ic_play_arrow_black_24dp"
         android:drawablePadding="8dp"
@@ -164,13 +165,13 @@
         android:text="play"
         app:layout_constraintBottom_toBottomOf="@+id/btn_record_hb"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toEndOf="@+id/btn_record_hb"
         app:layout_constraintTop_toTopOf="@+id/btn_record_hb" />
 
     <Button
         android:id="@+id/settings_id"
-        android:layout_width="wrap_content"
+        android:layout_width="125dp"
         android:layout_height="48dp"
         android:background="@drawable/test_man_just_work"
         android:drawableLeft="@drawable/ic_settings_black_24dp"
@@ -178,7 +179,10 @@
         android:onClick="settingsActivity"
         android:padding="8dp"
         android:text="settings"
-        app:layout_constraintStart_toStartOf="@+id/play_id"
+        app:layout_constraintBottom_toBottomOf="@+id/btn_submit_hb"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toEndOf="@+id/btn_submit_hb"
         app:layout_constraintTop_toTopOf="@+id/btn_submit_hb" />
 </android.support.constraint.ConstraintLayout>
 
