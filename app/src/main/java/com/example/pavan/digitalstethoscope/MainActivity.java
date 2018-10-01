@@ -30,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import java.net.InetAddress;
+import java.text.DateFormat;
 import java.util.*;
 import android.util.Log;
 import android.view.View;
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(true);
-       mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
+        //mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
         mqttConnectOptions.setUserName(preferences.getString("mqtt_username","wlhagkju"));
         mqttConnectOptions.setPassword(preferences.getString("mqtt_password","_5NZoVmjTPjx").toCharArray());
         return mqttConnectOptions;
@@ -280,6 +281,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setTitle("Cardi-AI");
         preferences = getSharedPreferences("Hell",MODE_PRIVATE);
         pick = findViewById(R.id.pick_id);
         filepath = findViewById(R.id.path_id);
@@ -290,9 +292,9 @@ public class MainActivity extends AppCompatActivity {
         recordPgBar = findViewById(R.id.pgbar_record_hb);
 
 
-        Toast.makeText(this, preferences.getString("ftp_ip", "192.168.43.113"), Toast.LENGTH_SHORT).show();
-        Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
-        Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, preferences.getString("ftp_ip", "192.168.43.113"), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
 
 
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
@@ -422,7 +424,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 recordPgBarStatus=0;
-                String path= "/storage/self/primary/Audio/test.wav";
+                String fileName = DateFormat.getDateTimeInstance().format(new Date());
+                String path= "/storage/self/primary/Audio/test_real_test_man.wav";
 
                 //pg bar thread runs for 10 sec.
                 new Thread(new Runnable()
@@ -430,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run()
                     {
-                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/test.wav");
+                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/test_real_test_man.wav");
                         wavRecorder.startRecording();
                         while(recordPgBarStatus<=100)
                         {
