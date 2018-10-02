@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
@@ -13,6 +14,7 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.media.audiofx.Equalizer;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.provider.SyncStateContract;
@@ -28,6 +30,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import java.net.InetAddress;
+import java.text.DateFormat;
 import java.util.*;
 import android.util.Log;
 import android.view.View;
@@ -57,6 +60,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.util.regex.Pattern;
 
 import com.adeel.library.easyFTP;
 import com.musicg.wave.Wave;
@@ -67,13 +71,14 @@ import com.nbsp.materialfilepicker.ui.FilePickerActivity;
 public class MainActivity extends AppCompatActivity {
     Button pick;
     TextView filepath;
+    TextView text;
     TextView resultTextView;
     ProgressBar recordPgBar;
     int recordPgBarStatus = 0;
     Button recordButton;
     Button submitButton;
     Handler pgHandler = new Handler();
-    MediaPlayer mp;
+    MediaPlayer player;
 
     private static final int RECORDER_BPP = 16;
     private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
@@ -95,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "Main Activity";
     MqttAndroidClient mqtt;
 
-    @Override //android permissions for recording sound
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         switch (requestCode){
@@ -106,20 +111,13 @@ public class MainActivity extends AppCompatActivity {
         if (!permissionToRecordAccepted ) finish();
 
     }
-
-
-    //saveToInternalStorage method not working properly, Ignore
     private String saveToInternalStorage(Bitmap bitmapImage){
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        // path to /data/data/yourapp/app_data/imageDir
         File directory = cw.getDir("imageDir", Context.MODE_PRIVATE);
-        // Create imageDir
         File mypath=new File(directory,"profile.jpg");
-
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(mypath);
-            // Use the compress method on the BitMap object to write image to the OutputStream
             bitmapImage.compress(Bitmap.CompressFormat.PNG, 100, fos);
             Log.d(TAG, "saveToInternalStorage: did it work ?");
         } catch (Exception e) {
@@ -133,12 +131,9 @@ public class MainActivity extends AppCompatActivity {
         }
         return directory.getAbsolutePath();
     }
-
-    //code to convert spectrogram data to image.
     public Bitmap spectrogramToImage(double[][] data) {
         Bitmap bmp = null;
         if (data != null) {
-            //paint.setStrokeWidth(1);
             int width = data.length;
             int height = data[0].length;
 
@@ -160,8 +155,7 @@ public class MainActivity extends AppCompatActivity {
             FileOutputStream out = null;
             try {
                 out = new FileOutputStream(getCacheDir() + "demo_spectrogram_image");
-                bmp.compress(Bitmap.CompressFormat.PNG, 100, out); // bmp is your Bitmap instance
-                // PNG is a lossless format, the compression factor (100) is ignored
+                bmp.compress(Bitmap.CompressFormat.PNG, 100, out);
                 saveToInternalStorage(bmp);
                 Log.d(TAG, "spectrogramToImage: success ????");
 
@@ -186,11 +180,11 @@ public class MainActivity extends AppCompatActivity {
 
     private MqttConnectOptions getMqttConnectionOption() {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
-        mqttConnectOptions.setCleanSession(false);
+        mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(true);
-       mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "I am going offline".getBytes(), 1, true);
-        mqttConnectOptions.setUserName(Constants.USER_NAME);
-        mqttConnectOptions.setPassword(Constants.PASSWORD.toCharArray());
+        //mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
+        mqttConnectOptions.setUserName(preferences.getString("mqtt_username","wlhagkju"));
+        mqttConnectOptions.setPassword(preferences.getString("mqtt_password","_5NZoVmjTPjx").toCharArray());
         return mqttConnectOptions;
     }
     private DisconnectedBufferOptions getDisconnectedBufferOptions() {
@@ -223,7 +217,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                         @Override
                         public void messageArrived(String s, MqttMessage mqttMessage) throws Exception {
-                            //setMessageNotification(s, new String(mqttMessage.getPayload()));
                             Log.d(TAG,new String(mqttMessage.getPayload()));
                             resultTextView.setText(new String(mqttMessage.getPayload()));
                         }
@@ -262,7 +255,7 @@ public class MainActivity extends AppCompatActivity {
         encodedPayload = msg.getBytes("UTF-8");
         MqttMessage message = new MqttMessage(encodedPayload);
         message.setId(5866);
-        message.setRetained(true);
+        message.setRetained(false);
         message.setQos(qos);
         client.publish(topic, message);
     }
@@ -283,25 +276,32 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
+    SharedPreferences preferences;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // initalising all UI elements
+        setTitle("Cardi-AI");
+        preferences = getSharedPreferences("Hell",MODE_PRIVATE);
         pick = findViewById(R.id.pick_id);
         filepath = findViewById(R.id.path_id);
+        text = findViewById(R.id.path_id);
         resultTextView = findViewById(R.id.txt_result);
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
         recordPgBar = findViewById(R.id.pgbar_record_hb);
 
 
+        //Toast.makeText(this, preferences.getString("ftp_ip", "192.168.43.113"), Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
+
+
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
+        final ImageView imgView2 = findViewById(R.id.imageView1);
         bufferSize = AudioRecord.getMinBufferSize(8000,
                 AudioFormat.CHANNEL_CONFIGURATION_MONO, AudioFormat.ENCODING_PCM_16BIT);
         ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
-        //ActivityCompat.requestPermissions(this,permissions,);
         pick.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -309,38 +309,23 @@ public class MainActivity extends AppCompatActivity {
                         .withActivity(MainActivity.this)
                         .withRequestCode(1000)
                         .withPath("/storage/emulated/0/Audio")
-                        //.withFilter(Pattern.compile(".*\\$")) // Filtering files and directories by file name using regexp
-                        // .withFilterDirectories(true) // Set directories filterable (false by default)
-                        .withHiddenFiles(true) // Show hidden files and folders
+                        .withHiddenFiles(true)
                         .start();
             }
         });
-
-
-
-
-
-
-
-        //creating the client
-        mqtt = getMqttClient(this,Constants.MQTT_BROKER_URL,Constants.CLIENT_ID);
+        mqtt = getMqttClient(this,preferences.getString("mqtt_ip","tcp://m11.cloudmqtt.com") + ":" + preferences.getString("mqtt_port","16138"),Constants.CLIENT_ID);
 
         try
         {
             publishMessage(mqtt,"Hello World" , 0, Constants.PUBLISH_TOPIC);
-            //subscribe(mqtt,Constants.SUBSCRIBE_TOPIC,0);
         }
         catch(Exception e)
         {
             Log.d(TAG," Failure "+e);
         }
-        //events
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //spectrogram generation and base64 conversion here
-
                 File demoFile =new File(getCacheDir()+"demo.wav");
                 InputStream ins = getResources().openRawResource(R.raw.demo);
                 Log.d(TAG, "INS" + ins);
@@ -356,16 +341,13 @@ public class MainActivity extends AppCompatActivity {
 
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.READ_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-                    // Permission is not granted
                     Log.d(TAG, "onCreate: PERMISSION NOT GRANTED");
-                    // requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},42);
                     Log.d(TAG, "onCreate: after permissions");
 
                 }
 
                 if (ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)
                         != PackageManager.PERMISSION_GRANTED) {
-                    // Permission is not granted
                     Log.d(TAG, "onCreate: PERMISSION NOT GRANTED");
                 }
                 @SuppressLint("StaticFieldLeak") AsyncTask asyncTask =new AsyncTask() {
@@ -373,39 +355,29 @@ public class MainActivity extends AppCompatActivity {
                     protected Object doInBackground(Object[] objects) {
                         try {
                             SimpleFTP ftp = new SimpleFTP();
-                            //requestPermissions(new String[] {Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},0);
-                            // Connect to an FTP server on port 21.
                             Log.d(TAG, "onCreate: before connect");
-                            ftp.connect("192.168.2.7", 21);
-                            //ftp.connect("192.168.2.2", 2121,"ftp","ftp");
+
+                            ftp.connect(preferences.getString("ftp_ip","192.168.43.114"),21,
+                                    preferences.getString("ftp_username","pavan"),
+                                    preferences.getString("ftp_pass","glaedr491"));
+
                             Log.d(TAG, "onCreate: after connect");
-                            // Set binary mode.
                             ftp.bin();
-
-                            // Change to a new working directory on the FTP server.
-                            Log.d(TAG, "doInBackground: before changing directory");
-                            //ftp.cwd("Download/");
-                            //ftp.cwd("MATLAB/");
-                            Log.d(TAG, "doInBackground: after changing dir");
-                            // Upload some files.
-                            Log.d(TAG, "doInBackground: "+getFilesDir());
+                            Log.d(TAG, "doInBackground FTP: before changing directory");
+                            Log.d(TAG, "doInBackground FTP: after changing dir");
+                            Log.d(TAG, "doInBackground FTP: "+getFilesDir());
                             String path ="/storage/emulated/0/Audio";
-                            File file = new File(new File(path),"example.wav");
-                            Log.d(TAG, "doInBackground: "+file);
-                            final int d = Log.d(TAG, "doInBackground: before file upload");
-                            Log.d(TAG, "doInBackground: current ftp path"+ftp.pwd());
-                            ftp.stor(new File(path+"/example.wav"));
-                            // ftp.stor(new File("comicbot-latest.png"));
 
-                            // You can also upload from an InputStream, e.g.
-                            // ftp.stor(new FileInputStream(new File("test.png")), "test.png");
-                            // ftp.stor(someSocket.getInputStream(), "blah.dat");
+                            File file = new File(filepath.getText().toString());
+                            Log.d(TAG, "doInBackground FTP: "+file);
+                            final int d = Log.d(TAG, "doInBackground FTP: before file upload");
+                            Log.d(TAG, "doInBackgroundFTP: current ftp path"+ftp.pwd());
+                            ftp.stor(file);
+
                             Log.d(TAG, "doInBackground: after upload");
 
-                            // Quit from the FTP server.
                             ftp.disconnect();
                         } catch (IOException e) {
-                            // Jibble.
                             Log.d(TAG, "onCreate: failed");
                             e.printStackTrace();
                         }
@@ -422,7 +394,7 @@ public class MainActivity extends AppCompatActivity {
                 };
                 asyncTask.execute();
 
-                Wave wave = new Wave(getCacheDir()+"demo.wav");
+                Wave wave = new Wave(filepath.getText().toString());
                 Spectrogram spectrogram = new Spectrogram(wave);
 
 
@@ -430,18 +402,17 @@ public class MainActivity extends AppCompatActivity {
                 bp = spectrogramToImage(spectrogram.getAbsoluteSpectrogramData());
 
                 imgView.setImageBitmap(bp);
+                imgView2.setImageBitmap(bp);
 
-
-
-                // Bitmap to base64 encoding
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 bp.compress(Bitmap.CompressFormat.PNG, 90, byteArrayOutputStream);
                 byte[] byteArray = byteArrayOutputStream .toByteArray();
-                //String encoded = Base64.encodeToString(byteArray, Base64.DEFAULT);
-                String msg= Base64.encodeToString(byteArray, Base64.NO_WRAP);
+                String[] list=filepath.getText().toString().split(Pattern.quote("/"));
+                Log.e(TAG, "publish : "+ list[list.length-1]);
+                String msg= "sent wav file"+list[list.length-1];
                 try {
-                    publishMessage(mqtt, msg, 0, Constants.PUBLISH_TOPIC);
-                    Log.d(TAG, "onClick: after publish" + msg);
+                    publishMessage(mqtt, list[list.length-1].substring(0,list[list.length-1].length()-4), 0, Constants.PUBLISH_TOPIC);
+                    Log.d(TAG, "onClick: after publish" + list[list.length-1]);
                 }
                 catch(Exception e)
                 {
@@ -452,8 +423,9 @@ public class MainActivity extends AppCompatActivity {
         recordButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-
+                recordPgBarStatus=0;
+                String fileName = DateFormat.getDateTimeInstance().format(new Date());
+                String path= "/storage/self/primary/Audio/test_real_test_man.wav";
 
                 //pg bar thread runs for 10 sec.
                 new Thread(new Runnable()
@@ -461,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run()
                     {
-                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/test.wav");
+                        WavRecorder wavRecorder = new WavRecorder("/storage/self/primary/Audio/test_real_test_man.wav");
                         wavRecorder.startRecording();
                         while(recordPgBarStatus<=100)
                         {
@@ -481,7 +453,7 @@ public class MainActivity extends AppCompatActivity {
                         wavRecorder.stopRecording();
                     }
                 }).start();
-
+                filepath.setText(path);
 
             }
 
@@ -497,5 +469,28 @@ public class MainActivity extends AppCompatActivity {
             String filePath = data.getStringExtra(FilePickerActivity.RESULT_FILE_PATH);
             filepath.setText(filePath);
         }
+    }
+
+    public void settingsActivity(View view) {
+        Intent i = new Intent(this,settings.class);
+        startActivity(i);
+    }
+
+    public void play(View view) {
+        player = new MediaPlayer();
+        String a = (String) text.getText();
+        try {
+            player.setDataSource(a);
+            player.prepare();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+            @Override
+            public void onPrepared(MediaPlayer mp) {
+                mp.start();
+            }
+        });
+
     }
 }
