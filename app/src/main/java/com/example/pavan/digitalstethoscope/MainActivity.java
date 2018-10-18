@@ -181,7 +181,6 @@ public class MainActivity extends AppCompatActivity {
         MqttConnectOptions mqttConnectOptions = new MqttConnectOptions();
         mqttConnectOptions.setCleanSession(true);
         mqttConnectOptions.setAutomaticReconnect(true);
-        //mqttConnectOptions.setWill(Constants.PUBLISH_TOPIC, "first message".getBytes(), 1, false);
         mqttConnectOptions.setUserName(preferences.getString("mqtt_username","wlhagkju"));
         mqttConnectOptions.setPassword(preferences.getString("mqtt_password","_5NZoVmjTPjx").toCharArray());
         return mqttConnectOptions;
@@ -289,11 +288,6 @@ public class MainActivity extends AppCompatActivity {
         submitButton = findViewById(R.id.btn_submit_hb);
         recordButton = findViewById(R.id.btn_record_hb);
         recordPgBar = findViewById(R.id.pgbar_record_hb);
-
-
-        //Toast.makeText(this, preferences.getString("ftp_ip", "192.168.43.113"), Toast.LENGTH_SHORT).show();
-        //Toast.makeText(this,Constants.USER_NAME,Toast.LENGTH_SHORT).show();
-        //Toast.makeText(this,Constants.PASSWORD,Toast.LENGTH_SHORT).show();
 
 
         final ImageView imgView = (ImageView)findViewById(R.id.imageView);
@@ -425,8 +419,6 @@ public class MainActivity extends AppCompatActivity {
                 recordPgBarStatus=0;
                 String fileName = DateFormat.getDateTimeInstance().format(new Date());
                 String path= "/storage/self/primary/Audio/test_real_test_man.wav";
-
-                //pg bar thread runs for 10 sec.
                 new Thread(new Runnable()
                 {
                     @Override
